@@ -1,6 +1,0 @@
-streamlit
-faiss-cpu==1.7.4
-sentence-transformers
-PyPDF2
-python-docx
-requests
