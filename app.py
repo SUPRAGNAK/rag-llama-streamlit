@@ -1,9 +1,11 @@
+# app.py
+
 import streamlit as st
 from rag_chain import query_llama_with_context
 from vector_store import load_vector_store
 from retriever import get_top_k_chunks
 
-st.set_page_config(page_title="RAG Chat with LLaMA 3", layout="wide")
+st.set_page_config(page_title="RAG Chat with OpenAI", layout="wide")
 
 # Load vector store and chunks
 vector_store, chunks = load_vector_store()
@@ -17,8 +19,8 @@ if "input_text" not in st.session_state:
     st.session_state.input_text = ""
 
 # --- Title ---
-st.title("📚 Local RAG Chat with LLaMA 3 (Ollama)")
-st.markdown("Chat with your PDF/DOCX files using a local LLM + FAISS.")
+st.title("📚 Local RAG Chat with OpenAI")
+st.markdown("Chat with your PDF/DOCX files using OpenAI + FAISS.")
 st.divider()
 
 # --- Clear Chat Button ---
@@ -38,7 +40,7 @@ if st.session_state.chat_history:
 else:
     st.info("No chat yet. Ask your first question below!")
 
-# --- Input Form (ensures Enter press only) ---
+# --- Input Form ---
 with st.form("user_input_form", clear_on_submit=True):
     user_input = st.text_input(
         "Ask your question",
@@ -52,11 +54,19 @@ with st.form("user_input_form", clear_on_submit=True):
 if submitted and user_input.strip():
     with st.spinner("🤖 Assistant is thinking..."):
         top_chunks = get_top_k_chunks(user_input, vector_store, chunks)
-        response = query_llama_with_context(user_input, top_chunks)
+        response = query_llama_with_context(
+            user_input,
+            top_chunks,
+            st.session_state.chat_history
+        )
 
     st.session_state.chat_history.append({
         "user": user_input,
         "bot": response
     })
+
+    # Limit memory to last 15 messages
+    if len(st.session_state.chat_history) > 15:
+        st.session_state.chat_history = st.session_state.chat_history[-15:]
 
     st.rerun()
