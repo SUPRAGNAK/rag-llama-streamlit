@@ -1,30 +1,28 @@
 # rag_chain.py
 
-from openai import OpenAI
-import streamlit as st
+import openai
+import os
 
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-def query_llama_with_context(query, context_chunks):
+def query_llama_with_context(query, context_chunks, history=[]):
     context = "\n".join(context_chunks)
-    prompt = f"""Use the following context to answer the question.
-If the context is not sufficient, say that politely.
 
-Context:
-{context}
+    messages = [
+        {"role": "system", "content": "You are a helpful assistant. You will repond to the the context, if required details are not available provide basic informtation through the genAI capabilities and do not hallucnate on the content created. Also try to remember the past chats and then provide relative information and expplanation"},
+        {"role": "system", "content": f"Context:\n{context}"}
+    ]
 
-Question: {query}
+    # Add up to last 10–15 previous turns
+    for pair in history[-10:]:
+        messages.append({"role": "user", "content": pair["user"]})
+        messages.append({"role": "assistant", "content": pair["bot"]})
 
-Answer:"""
+    messages.append({"role": "user", "content": query})
 
-#    response = client.chat.completions.create(
-#    response = openai.ChatCompletion.create(
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo",  # Use "gpt-4" if you have access
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant. You will repond to the the context, if required details are not available provide basic informtation through the genAI capabilities and do not hallucnate on the content created. Also try to remember the past chats and then provide relative information and expplanation"},
-            {"role": "user", "content": prompt}
-        ]
+        model="gpt-3.5-turbo",  # Or "gpt-4" if available
+        messages=messages
     )
 
     return response.choices[0].message.content.strip()
