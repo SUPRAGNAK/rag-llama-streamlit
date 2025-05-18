@@ -1,8 +1,15 @@
-import requests
+# rag_chain.py
+
+import openai
+import streamlit as st
+
+# Read the OpenAI API key from Streamlit secrets
+openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 def query_llama_with_context(query, context_chunks):
     context = "\n".join(context_chunks)
-    prompt = f"""Use the following context to answer the question. When the right context is not provided please reply with a apt message wherever required.
+    prompt = f"""Use the following context to answer the question. 
+If the context is not sufficient, say that politely.
 
 Context:
 {context}
@@ -11,9 +18,12 @@ Question: {query}
 
 Answer:"""
 
-    response = requests.post(
-        "http://localhost:11434/api/generate",
-        json={"model": "llama3", "prompt": prompt, "stream": False}
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",  # Or use gpt-4 if you have access
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": prompt}
+        ]
     )
 
-    return response.json().get("response", "").strip()
+    return response.choices[0].message.content.strip()
