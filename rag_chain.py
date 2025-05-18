@@ -22,7 +22,7 @@ Answer:"""
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",  # Use "gpt-4" if you have access
         messages=[
-            {"role": "system", "content": "You are a helpful assistant. Based context replay with minimum reasoning and understanding then provide response."},
+            {"role": "system", "content": "You are a helpful assistant. You will repond to the the context, if required details are not available provide basic informtation through the genAI capabilities and do not hallucnate on the content created."},
             {"role": "user", "content": prompt}
         ]
     )
