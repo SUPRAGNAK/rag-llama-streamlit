@@ -17,7 +17,8 @@ Question: {query}
 
 Answer:"""
 
-    response = client.chat.completions.create(
+#    response = client.chat.completions.create(
+    response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",  # Use "gpt-4" if you have access
         messages=[
             {"role": "system", "content": "You are a helpful assistant. Based context replay with minimum reasoning and understanding then provide response."},
